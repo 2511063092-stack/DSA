@@ -372,11 +372,11 @@ void inputStr(char msg[], char str[], int size){
 void printBooks(Book *head){
     if(head == NULL){ printf("-> Danh sach sach dang trong!\n"); return; }
     // %-10s: dành ra 10 ô ký tự và canh lề trái cho chuỗi | %-6d: dành 6 ô canh lề trái cho số nguyên
-    printf("\n%-10s | %-30s | %-18s | %-18s | %-6s | %-6s | %-8s\n",
+    printf("\n%-10s | %-30s | %-20s | %-18s | %-6s | %-6s | %-8s\n",
            "Ma Sach", "Ten Sach", "Tac Gia", "NXB", "Nam XB", "SL Kho", "Luot Muon");
-    printf("---------------------------------------------------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------------------------------------------------\n");
     while(head != NULL){
-        printf("%-10s | %-28s | %-18s | %-15s | %-6d | %-6d | %-8d\n",
+        printf("%-10s | %-30s | %-20s | %-18s | %-6d | %-6d | %-8d\n",
                head->data.id_book, head->data.name_book, head->data.author,
                head->data.publisher, head->data.year_publish, head->data.quantity, head->data.borrow_count);
         head = head->next;
@@ -480,7 +480,7 @@ int main(){
     int choice;                   // choice: biến lưu lựa chọn chức năng ở menu chính (từ 0 đến 11)
 
     // Nạp sẵn dữ liệu ngay khi khởi động chương trình
-    //initSampleData(&book_head, &reader_head, &borrow_head);
+    initSampleData(&book_head, &reader_head, &borrow_head);
     //printf("-> Da khoi tao 10 cuon sach, 5 doc gia va lich su muon mau!\n"");
 
     while(1){ // vòng lặp vô hạn giữ chương trình chạy liên tục cho đến khi chọn 0 (break)
