@@ -484,14 +484,14 @@ int main(){
     //printf("-> Da khoi tao 10 cuon sach, 5 doc gia va lich su muon mau!\n"");
 
     while(1){ // vòng lặp vô hạn giữ chương trình chạy liên tục cho đến khi chọn 0 (break)
-        printf("\n================ HE THONG QUAN LY THU VIEN ================\n");
+        printf("\n==================== HE THONG QUAN LY THU VIEN ====================\n");
         printf(" 1. Them / Xoa / Sua Sach          7. Tra cuu lich su muon\n");
         printf(" 2. Them / Xoa / Sua Doc gia       8. Doc gia muon nhieu sach nhat\n");
         printf(" 3. Muon sach                      9. Sach duoc muon nhieu nhat\n");
         printf(" 4. Tra sach                      10. Sap xep sach\n");
         printf(" 5. Kiem tra sach con hay het     11. Tim kiem sach\n");
         printf(" 6. Tra cuu sach                   0. Thoat chuong trinh\n");
-        printf("===========================================================\n");
+        printf("===================================================================\n");
         printf("Nhap lua chon: ");
 
         if(scanf("%d", &choice) != 1){ // nếu người dùng gõ chữ cái khiến scanf không đọc được số nguyên (trả về != 1)
