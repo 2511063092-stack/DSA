@@ -597,7 +597,7 @@ int main(){
             printf("  Chon tieu chi sap xep (1: Ten sach, 2: Nam XB, 3: So luong): ");
             scanf("%d", &mode); getchar();
             selectionSortBook(book_head, mode);
-            printf("-> Da sap xep danh sach sach thanh cong!\n");
+            printf("-> Da sap xep danh sach thanh cong!\n");
             printBooks(book_head); // in bảng sách ra màn hình sau khi sắp xếp xong
         }
         else if(choice == 11){ // yêu cầu 11: tìm kiếm sách bằng giải thuật sắp xếp chọn
