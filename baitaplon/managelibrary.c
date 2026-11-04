@@ -372,7 +372,7 @@ void inputStr(char msg[], char str[], int size){
 void printBooks(Book *head){
     if(head == NULL){ printf("-> Danh sach sach dang trong!\n"); return; }
     // %-10s: dành ra 10 ô ký tự và canh lề trái cho chuỗi | %-6d: dành 6 ô canh lề trái cho số nguyên
-    printf("\n%-10s | %-28s | %-18s | %-15s | %-6s | %-6s | %-8s\n",
+    printf("\n%-10s | %-30s | %-18s | %-18s | %-6s | %-6s | %-8s\n",
            "Ma Sach", "Ten Sach", "Tac Gia", "NXB", "Nam XB", "SL Kho", "Luot Muon");
     printf("---------------------------------------------------------------------------------------------------------\n");
     while(head != NULL){
