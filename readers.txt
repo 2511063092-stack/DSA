@@ -1,0 +1,7 @@
+
+
+DG01    |Ngo Quan Duc        |CNTT1-K15|0912345678 
+DG02    |Le Tuan Dat         |CNTT2-K15|0923456789 
+DG03    |Nguyen Mai Linh     |TTNT-K17 |0934567890 
+DG04    |Dao Duy Thanh       |KTPM-K15 |0945678901 
+DG05    |Pham Tuyet Nhinh    |KHMT-K15 |0956789012
