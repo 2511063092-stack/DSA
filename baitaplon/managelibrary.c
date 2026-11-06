@@ -318,8 +318,7 @@ void lookupBook(Book *book_head, char kw[]){
     for(Book *p = book_head; p != NULL; p = p->next){
         // hàm strstr(chuỗi_lớn, kw) kiểm tra xem từ khóa kw có nằm bên trong Mã sách, Tên sách hoặc Tác giả không
         if(strstr(p->data.id_book, kw) || strstr(p->data.name_book, kw) || strstr(p->data.author, kw)){
-            printf("  + [%s] %s - TG: %s - NXB: %s (Kho: %d)\n",
-                   p->data.id_book, p->data.name_book, p->data.author, p->data.publisher, p->data.quantity);
+            printf("  + [%s] %s - TG: %s - NXB: %s (Kho: %d)\n", p->data.id_book, p->data.name_book, p->data.author, p->data.publisher, p->data.quantity);
             found = 1; // bật cờ found = 1 vì đã tìm thấy sách khớp từ khóa
         }
     }
@@ -365,8 +364,7 @@ void printTopBooks(Book *book_head){
         // dùng con trỏ p duyệt tìm và in ra tất cả các cuốn sách có số lượt mượn bằng kỷ lục max_b
         for(Book *p = book_head; p != NULL; p = p->next){
             if(p->data.borrow_count == max_b)
-                printf("   + [%s] %s - Tac gia: %s\n",
-                       p->data.id_book, p->data.name_book, p->data.author);
+                printf("   + [%s] %s - Tac gia: %s\n", p->data.id_book, p->data.name_book, p->data.author);
         }
     }
 }
@@ -378,48 +376,47 @@ void freeAll(Book **b_head, Reader **r_head, Borrow **m_head){
     while(*m_head != NULL){ Borrow *tmp = *m_head; *m_head = (*m_head)->next; free(tmp); } // giải phóng DS mượn trả
 }
 
-// 2.6. Hàm khởi tạo dữ liệu mẫu (10 sách, 5 độc giả, 4 giao dịch mượn/trả)
-void initSampleData(Book **book_head, Reader **reader_head, Borrow **borrow_head){
-    // 1. Nạp danh sách 10 cuốn sách mẫu
-    Book_info b[] = {
-        {"B01", "Nha gia kim", "Paulo Coelho", "NXB Hoi Nha Van", 1988, 5},
-        {"B02", "Cuon theo chieu gio", "Margaret Mitchell", "NXB Van Hoc", 1936, 3},
-        {"B03", "Doi gio hu", "Emily Bronte", "NXB Van Hoc", 1847, 2},
-        {"B04", "Chua ruoi", "William Golding", "NXB Faber & Faber", 1954, 4},
-        {"B05", "Tren sa mac va trong rung tham", "Henryk Sienkiewicz", "NXB Kim Dong", 1911, 0}, // SL = 0 để test tình trạng hết sách
-        {"B06", "Data Structures & Algorithms", "Michael T. Goodrich", "Wiley", 2011, 6},
-        {"B07", "Cau truc du lieu va giai thuat", "Nguyen Duc Nghia", "NXB DH Bach Khoa", 2003, 7},
-        {"B08", "Doi ngan dung ngu dai", "Robin Sharma", "NXB Tre", 2007, 8},
-        {"B09", "Campbell Biology", "Neil A. Campbell", "Pearson", 2020, 4},
-        {"B10", "Hoa hoc dai cuong", "Vu Dang Do", "NXB Giao Duc", 2018, 5}
-    };
-    for(int i = 0; i < 10; i++) addBook(book_head, b[i]); // thêm lần lượt 10 cuốn vào danh sách sách
+// 2.6. Hàm đọc dữ liệu từ 3 file .txt nạp vào Danh sách liên kết
+void loadData(Book **book_head, Reader **reader_head, Borrow **borrow_head){
+    // 1. Đọc danh sách sách từ file books.txt
+    FILE *fb = fopen("books.txt", "r"); // mở file ở chế độ "r" (read - chỉ đọc)
+    if(fb != NULL){
+        Book_info b;
+        // %[^|] nghĩa là đọc chuỗi có dấu cách cho đến khi gặp dấu gạch đứng '|'
+        while(fscanf(fb, " %[^|]|%[^|]|%[^|]|%[^|]|%d|%d\n",
+                     b.id_book, b.name_book, b.author, b.publisher,
+                     &b.year_publish, &b.quantity) == 6){ // đọc đủ 6 thông tin trên 1 dòng
+            addBook(book_head, b); // gọi hàm thêm sách vào danh sách
+        }
+        fclose(fb); // đóng file sau khi đọc xong
+    }
 
-    // 2. Nạp danh sách 5 độc giả mẫu
-    Reader_info r[] = {
-        {"DG01", "Ngo Quan Duc", "CNTT1-K15", "0912345678"},
-        {"DG02", "Le Tuan Dat", "CNTT2-K15", "0987654321"},
-        {"DG03", "Dao Duy Thanh", "KTPM-K15", "0901234567"},
-        {"DG04", "Pham Tuyet Nhinh", "KHMT-K15", "0983576478"},
-        {"DG05", "Nguyen Mai Linh", "TTNT-K17", "0901884776"}
-    };
-    for(int i = 0; i < 5; i++) addReader(reader_head, r[i]); // thêm lần lượt 5 độc giả vào danh sách độc giả
+    // 2. Đọc danh sách độc giả từ file readers.txt
+    FILE *fr = fopen("readers.txt", "r");
+    if(fr != NULL){
+        Reader_info r;
+        while(fscanf(fr, " %[^|]|%[^|]|%[^|]|%s\n",
+                     r.id_reader, r.name_reader, r.class_name, r.phone) == 4){ // đọc đủ 4 thông tin
+            addReader(reader_head, r); // gọi hàm thêm độc giả vào danh sách
+        }
+        fclose(fr);
+    }
 
-    // 3. Tạo một số lượt mượn/trả mẫu để kiểm thử thống kê và lịch sử
-    // - DG01 mượn 2 cuốn: B01 và B06 (trở thành độc giả đang giữ nhiều sách nhất)
-    BorrowData m1 = {"DG01", "B01", "10/10/2026"};
-    BorrowData m2 = {"DG01", "B06", "12/10/2026"};
-    BorrowBook(*book_head, *reader_head, borrow_head, m1); 
-    BorrowBook(*book_head, *reader_head, borrow_head, m2); 
-
-    // - DG02 mượn B01 rồi đã trả 
-    BorrowData m3 = {"DG02", "B01", "01/10/2026"};
-    BorrowBook(*book_head, *reader_head, borrow_head, m3);
-    ReturnBook(*book_head, *reader_head, *borrow_head, "DG02", "B01", "08/10/2026"); 
-
-    // - DG03 mượn B07
-    BorrowData m4 = {"DG03", "B07", "15/10/2026"};
-    BorrowBook(*book_head, *reader_head, borrow_head, m4); 
+    // 3. Đọc lịch sử mượn trả từ file borrows.txt
+    FILE *fm = fopen("borrows.txt", "r");
+    if(fm != NULL){
+        BorrowData m;
+        char r_date[15];
+        int status;
+        while(fscanf(fm, " %[^|]|%[^|]|%[^|]|%[^|]|%d\n",
+                     m.id_reader, m.id_book, m.borrow_date, r_date, &status) == 5){ // đọc đủ 5 thông tin
+            BorrowBook(*book_head, *reader_head, borrow_head, m); // lập phiếu mượn
+            if(status == 0){ // nếu trạng thái trong file là 0 (đã trả) thì gọi tiếp hàm trả sách
+                ReturnBook(*book_head, *reader_head, *borrow_head, m.id_reader, m.id_book, r_date);
+            }
+        }
+        fclose(fm);
+    }
 }
 
 // 3. CÁC HÀM NHẬP XUẤT VÀ MENU CON 
@@ -579,9 +576,8 @@ int main(){
     Borrow *borrow_head = NULL;   // con trỏ quản lý đầu danh sách phiếu mượn (ban đầu rỗng)
     int choice;                   // choice: biến lưu lựa chọn chức năng ở menu chính (từ 0 đến 11)
 
-    // Nạp sẵn dữ liệu ngay khi khởi động chương trình
-    initSampleData(&book_head, &reader_head, &borrow_head);
-    //printf("-> Da khoi tao 10 cuon sach, 5 doc gia va lich su muon mau!\n"");
+    // Đọc dữ liệu từ 3 file .txt nạp vào danh sách liên kết ngay khi khởi động
+    loadData(&book_head, &reader_head, &borrow_head);
 
     while(1){ // vòng lặp vô hạn giữ chương trình chạy liên tục cho đến khi chọn 0 (break)
         printf("\n==================== HE THONG QUAN LY THU VIEN ====================\n");
