@@ -6,7 +6,7 @@
 // 1. KHAI BÁO CẤU TRÚC DỮ LIỆU 
 
 // 1.1. Cấu trúc Sách
-typedef struct Book_info {
+typedef struct Book_info{
     char id_book[20];       // Mã sách
     char name_book[100];    // Tên sách
     char author[50];        // Tác giả
@@ -16,13 +16,13 @@ typedef struct Book_info {
     int borrow_count;       // Tổng số lượt sách được mượn
 } Book_info;
 
-typedef struct Book {
+typedef struct Book{
     Book_info data;         // Thông tin của cuốn sách
     struct Book *next;      // Con trỏ trỏ tới cuốn sách tiếp theo trong danh sách
 } Book;
 
 // 1.2. Cấu trúc Độc giả
-typedef struct Reader_info {
+typedef struct Reader_info{
     char id_reader[20];     // Mã độc giả
     char name_reader[50];   // Họ tên độc giả
     char class_name[20];    // Lớp
@@ -30,13 +30,13 @@ typedef struct Reader_info {
     int current_borrowed;   // Số sách đang mượn hiện tại
 } Reader_info;
 
-typedef struct Reader {
+typedef struct Reader{
     Reader_info data;       // Thông tin của độc giả
     struct Reader *next;    // Con trỏ trỏ tới độc giả tiếp theo trong danh sách
 } Reader;
 
 // 1.3. Cấu trúc Phiếu Mượn/Trả (Lịch sử mượn)
-typedef struct BorrowData {
+typedef struct BorrowData{
     char id_reader[20];     // Mã độc giả mượn
     char id_book[20];       // Mã sách mượn
     char borrow_date[15];   // Ngày mượn
@@ -44,7 +44,7 @@ typedef struct BorrowData {
     int status;             // Trạng thái: 1 = Đang mượn, 0 = Đã trả
 } BorrowData;
 
-typedef struct Borrow {
+typedef struct Borrow{
     BorrowData data;        // Thông tin phiếu mượn
     struct Borrow *next;    // Con trỏ trỏ tới phiếu mượn tiếp theo trong danh sách
 } Borrow;
@@ -116,11 +116,16 @@ int addBook(Book **head, Book_info new_data){
 }
 
 // 2.2.3. Hàm xóa sách theo mã sách
-int deleteBook(Book **head, char id_book[]){
+int deleteBook(Book **head, Borrow *borrow_head, char id_book[]){
     if(*head == NULL) return 0; // danh sách đang rỗng thì trả về 0
+    // Kiểm tra xem sách có đang được ai mượn không
+    for(Borrow *p = borrow_head; p != NULL; p = p->next){
+        if(strcmp(p->data.id_book, id_book) == 0 && p->data.status == 1){
+            return -1; // Sách đang có người mượn, không được xóa!
+        }
+    }
     Book *curr = *head; // curr (current): con trỏ chạy để tìm node cần xóa
     Book *prev = NULL;  // prev (previous): con trỏ giữ node đứng ngay trước curr
-    
     // lặp khi chưa hết danh sách và mã sách của curr vẫn khác mã sách cần xóa
     while(curr != NULL && strcmp(curr->data.id_book, id_book) != 0){
         prev = curr; // lưu vết lại node đứng trước
@@ -306,7 +311,66 @@ int maxBookBorrow(Book *head){
     return max; // trả về số lượt lớn nhất
 }
 
-// 2.5.5. Hàm giải phóng toàn bộ bộ nhớ cấp phát động khi thoát chương trình
+// 2.5.5. Hàm tra cứu sách gần đúng theo từ khóa (Mã sách, Tên sách hoặc Tác giả)
+void lookupBook(Book *book_head, char kw[]){
+    int found = 0; // found: biến cờ đánh dấu kết quả (0 = chưa tìm thấy, 1 = đã tìm thấy ít nhất 1 cuốn)
+    // dùng con trỏ p chạy duyệt từ đầu danh sách sách (book_head) đến cuối (NULL)
+    for(Book *p = book_head; p != NULL; p = p->next){
+        // hàm strstr(chuỗi_lớn, kw) kiểm tra xem từ khóa kw có nằm bên trong Mã sách, Tên sách hoặc Tác giả không
+        if(strstr(p->data.id_book, kw) || strstr(p->data.name_book, kw) || strstr(p->data.author, kw)){
+            printf("  + [%s] %s - TG: %s - NXB: %s (Kho: %d)\n",
+                   p->data.id_book, p->data.name_book, p->data.author, p->data.publisher, p->data.quantity);
+            found = 1; // bật cờ found = 1 vì đã tìm thấy sách khớp từ khóa
+        }
+    }
+    if(!found) printf("-> Khong tim thay cuon sach nao phu hop!\n"); // !found nghĩa là found == 0 (không tìm thấy)
+}
+
+// 2.5.6. Hàm in bảng lịch sử mượn trả sách
+void printBorrowHistory(Borrow *borrow_head){
+    if(borrow_head == NULL){ printf("-> Chua co lich su muon/tra sach!\n"); return; } // danh sách mượn đang rỗng
+    printf("\n%-12s | %-10s | %-12s | %-12s | %-12s\n", "Ma Doc Gia", "Ma Sach", "Ngay Muon", "Ngay Tra", "Trang Thai");
+    printf("----------------------------------------------------------------------\n");
+    // dùng con trỏ p duyệt qua từng phiếu mượn trong danh sách borrow_head
+    for(Borrow *p = borrow_head; p != NULL; p = p->next){
+        char *trang_thai; // trang_thai: con trỏ chuỗi lưu chữ hiển thị tình trạng phiếu mượn
+        if(p->data.status == 1) trang_thai = "Dang muon"; // nếu status bằng 1 là đang mượn
+        else trang_thai = "Da tra"; // ngược lại status bằng 0 là đã trả sách
+        printf("%-12s | %-10s | %-12s | %-12s | %-12s\n",
+               p->data.id_reader, p->data.id_book, p->data.borrow_date, p->data.return_date, trang_thai);
+    }
+}
+
+// 2.5.7. Hàm liệt kê các độc giả đang mượn nhiều sách nhất
+void printTopReaders(Reader *reader_head){
+    int max_r = maxReaderBorrow(reader_head); // max_r (max reader): số lượng sách đang mượn cao nhất
+    if(max_r == 0) printf("-> Hien khong co doc gia nao dang muon sach!\n");
+    else{
+        printf("-> Doc gia dang muon nhieu sach nhat (%d cuon):\n", max_r);
+        // dùng con trỏ p duyệt tìm và in ra tất cả độc giả có số sách đang mượn bằng kỷ lục max_r
+        for(Reader *p = reader_head; p != NULL; p = p->next){
+            if(p->data.current_borrowed == max_r)
+                printf("   + [%s] %s - Lop: %s - SDT: %s\n",
+                       p->data.id_reader, p->data.name_reader, p->data.class_name, p->data.phone);
+        }
+    }
+}
+
+// 2.5.8. Hàm liệt kê các cuốn sách được mượn nhiều lượt nhất
+void printTopBooks(Book *book_head){
+    int max_b = maxBookBorrow(book_head); // max_b (max book): số lượt được mượn cao nhất của sách
+    if(max_b == 0) printf("-> Chua co cuon sach nao duoc muon!\n");
+    else{
+        printf("-> Sach duoc muon nhieu nhat (%d luot):\n", max_b);
+        // dùng con trỏ p duyệt tìm và in ra tất cả các cuốn sách có số lượt mượn bằng kỷ lục max_b
+        for(Book *p = book_head; p != NULL; p = p->next){
+            if(p->data.borrow_count == max_b)
+                printf("   + [%s] %s - Tac gia: %s\n",
+                       p->data.id_book, p->data.name_book, p->data.author);
+        }
+    }
+}
+// 2.5.9. Hàm giải phóng toàn bộ bộ nhớ cấp phát động khi thoát chương trình
 // b_head: đầu DS sách | r_head: đầu DS độc giả | m_head: đầu DS mượn trả | tmp: con trỏ tạm giữ node cần xóa
 void freeAll(Book **b_head, Reader **r_head, Borrow **m_head){
     while(*b_head != NULL){ Book *tmp = *b_head; *b_head = (*b_head)->next; free(tmp); } // giải phóng DS sách
@@ -363,9 +427,21 @@ void initSampleData(Book **book_head, Reader **reader_head, Borrow **borrow_head
 // 3.1. Hàm nhập chuỗi an toàn
 // msg(message): câu thông báo in ra màn hình | str: mảng lưu chuỗi nhập vào | size: độ dài tối đa của mảng str
 void inputStr(char msg[], char str[], int size){
-    printf("%s", msg); // in câu thông báo nhắc người dùng
-    fgets(str, size, stdin); // đọc cả dòng chuỗi có dấu cách từ bàn phím (stdin)
-    str[strlen(str) - 1] = '\0'; // strlen(str) - 1 là vị trí ký tự Enter ('\n') ở cuối chuỗi -> gán bằng '\0' để xóa đi
+    printf("%s", msg);
+    fgets(str, size, stdin); // Đọc chuỗi từ bàn phím tối đa (size - 1) ký tự
+    int len = strlen(str);   // Đo độ dài chuỗi vừa đọc được
+    // KIỂM TRA: Ký tự cuối cùng trong mảng str có phải là phím Enter ('\n') không?
+    if(len > 0 && str[len - 1] == '\n'){
+        // Rơi vào TRƯỜNG HỢP 1 (Nhập ngắn vừa đủ):
+        // Có phím '\n' ở cuối -> chỉ cần xóa '\n' đi là xong
+        str[len - 1] = '\0'; 
+    } 
+    else {
+        // Rơi vào TRƯỜNG HỢP 2 (Nhập quá dài, phím '\n' vẫn còn kẹt ngoài bộ đệm):
+        // Giữ nguyên mảng str (không xóa nhầm ký tự cuối), 
+        // và dùng vòng lặp đọc bỏ hết các ký tự thừa trong bộ đệm cho đến khi gặp '\n'
+        while(getchar() != '\n'); 
+    }
 }
 
 // 3.2. Hàm in bảng danh sách sách
@@ -398,7 +474,7 @@ void printReaders(Reader *head){
 }
 
 // 3.4. Menu con quản lý sách (Thêm / Xóa / Sửa / In)
-void menuBook(Book **Book_head){
+void menuBook(Book **Book_head, Borrow *borrow_head){
     int sub; // sub(sub-menu): biến lưu lựa chọn trong menu con (1, 2, 3 hoặc 4)
     printf("  [1] Them sach  [2] Xoa sach  [3] Sua sach  [4] In DS sach: ");
     if(scanf("%d", &sub) != 1){ while(getchar() != '\n'); return; } // nếu nhập chữ (scanf != 1) thì xóa bộ đệm và thoát menu con
@@ -410,15 +486,28 @@ void menuBook(Book **Book_head){
         inputStr("  Nhap ten sach: ", b.name_book, sizeof(b.name_book));
         inputStr("  Nhap tac gia: ", b.author, sizeof(b.author));
         inputStr("  Nhap NXB: ", b.publisher, sizeof(b.publisher));
-        printf("  Nhap nam XB va so luong: ");
-        scanf("%d %d", &b.year_publish, &b.quantity); getchar();
+        while(1){
+        printf("  Nhap nam XB (>0) va so luong (>=0): ");
+        if(scanf("%d %d", &b.year_publish, &b.quantity) != 2){
+            while(getchar() != '\n'); // Xóa chữ bị nhập sai trong bộ đệm
+            printf("  -> [Loi] Vui long nhap so nguyen!\n");
+            continue; // Quay lại đầu vòng lặp để nhập lại
+        }
+        getchar(); // Xóa phím Enter thừa
+        if(b.year_publish > 0 && b.quantity >= 0){
+            break; // Nhập đúng hợp lệ -> Thoát khỏi vòng lặp while(1)
+        }
+        printf("  -> [Loi] Nam XB phai > 0 va So luong phai >= 0! Vui long nhap lai.\n");
+        }
         if(addBook(Book_head, b) == 1) printf("-> Them sach thanh cong!\n");
         else printf("-> [Loi] Ma sach da ton tai!\n");
     }
     else if(sub == 2){
-        char id[20]; // id: mảng lưu mã sách cần xóa
+        char id[20];
         inputStr("  Nhap ma sach can xoa: ", id, sizeof(id));
-        if(deleteBook(Book_head, id) == 1) printf("-> Xoa sach thanh cong!\n");
+        int res = deleteBook(Book_head, borrow_head, id); // Truyền đủ 3 tham số
+        if(res == 1) printf("-> Xoa sach thanh cong!\n");
+        else if(res == -1) printf("-> [Loi] Sach dang co doc gia muon, khong duoc xoa!\n");
         else printf("-> [Loi] Khong tim thay ma sach!\n");
     }
     else if(sub == 3){
@@ -427,8 +516,19 @@ void menuBook(Book **Book_head){
         inputStr("  Nhap ten sach moi: ", b.name_book, sizeof(b.name_book));
         inputStr("  Nhap tac gia moi: ", b.author, sizeof(b.author));
         inputStr("  Nhap NXB moi: ", b.publisher, sizeof(b.publisher));
-        printf("  Nhap nam XB va so luong moi: ");
-        scanf("%d %d", &b.year_publish, &b.quantity); getchar();
+        while(1){
+        printf("  Nhap nam XB (>0) va so luong (>=0): ");
+        if(scanf("%d %d", &b.year_publish, &b.quantity) != 2){
+            while(getchar() != '\n'); // Xóa chữ bị nhập sai trong bộ đệm
+            printf("  -> [Loi] Vui long nhap so nguyen!\n");
+            continue; // Quay lại đầu vòng lặp để nhập lại
+        }
+        getchar(); // Xóa phím Enter thừa
+        if(b.year_publish > 0 && b.quantity >= 0){
+            break; // Nhập đúng hợp lệ -> Thoát khỏi vòng lặp while(1)
+        }
+        printf("  -> [Loi] Nam XB phai > 0 va So luong phai >= 0! Vui long nhap lai.\n");
+        }
         if(updateBook(*Book_head, b.id_book, b) == 1) printf("-> Sua thong tin sach thanh cong!\n");
         else printf("-> [Loi] Khong tim thay ma sach!\n");
     }
@@ -506,7 +606,7 @@ int main(){
             printf("-> Da giai phong bo nho va thoat chuong trinh!\n");
             break; // thoát khỏi vòng lặp while(1)
         }
-        else if(choice == 1) menuBook(&book_head); // yêu cầu 1: thêm/xóa/sửa sách
+        else if(choice == 1) menuBook(&book_head, borrow_head); // yêu cầu 1: thêm/xóa/sửa sách
         else if(choice == 2) menuReader(&reader_head); // yêu cầu 2: thêm/xóa/sửa độc giả
         else if(choice == 3){ // yêu cầu 3: mượn sách
             BorrowData bd; // bd(borrow data): biến cấu trúc tạm lưu thông tin mượn sách
@@ -539,58 +639,17 @@ int main(){
         }
         else if(choice == 6){ // yêu cầu 6: tra cứu sách gần đúng theo mã, tên hoặc tác giả
             char kw[100]; // kw(keyword): biến lưu từ khóa tìm kiếm người dùng nhập vào
-            int found = 0; // found: biến cờ đánh dấu kết quả (0 = chưa tìm thấy, 1 = đã tìm thấy ít nhất 1 cuốn)
             inputStr("  Nhap tu khoa can tim (Ma / Ten / Tac gia): ", kw, sizeof(kw));
-            // dùng con trỏ p chạy duyệt từ đầu danh sách sách (book_head) đến cuối (NULL)
-            for(Book *p = book_head; p != NULL; p = p->next){
-                // hàm strstr(chuỗi_lớn, kw) kiểm tra xem từ khóa kw có nằm bên trong Mã sách, Tên sách hoặc Tác giả không
-                if(strstr(p->data.id_book, kw) || strstr(p->data.name_book, kw) || strstr(p->data.author, kw)){
-                    printf("  + [%s] %s - TG: %s - NXB: %s (Kho: %d)\n",
-                           p->data.id_book, p->data.name_book, p->data.author, p->data.publisher, p->data.quantity);
-                    found = 1; // bật cờ found = 1 vì đã tìm thấy sách khớp từ khóa
-                }
-            }
-            if(!found) printf("-> Khong tim thay cuon sach nao phu hop!\n"); // !found nghĩa là found == 0 (không tìm thấy)
+            lookupBook(book_head, kw); // gọi hàm duyệt tìm và in các cuốn sách chứa từ khóa kw
         }
         else if(choice == 7){ // yêu cầu 7: tra cứu lịch sử mượn trả
-            if(borrow_head == NULL) printf("-> Chua co lich su muon/tra sach!\n");
-            else{
-                printf("\n%-12s | %-10s | %-12s | %-12s | %-12s\n", "Ma Doc Gia", "Ma Sach", "Ngay Muon", "Ngay Tra", "Trang Thai");
-                printf("----------------------------------------------------------------------\n");
-               // dùng con trỏ p duyệt qua từng phiếu mượn trong danh sách borrow_head
-                for(Borrow *p = borrow_head; p != NULL; p = p->next){
-                    char *trang_thai;
-                    if(p->data.status == 1)  trang_thai = "Dang muon"; // nếu status bằng 1 là đang mượn
-                    else trang_thai = "Da tra";     // ngược lại là đã trả sách
-                printf("%-12s | %-10s | %-12s | %-12s | %-12s\n", p->data.id_reader, p->data.id_book, p->data.borrow_date,p->data.return_date, trang_thai);
-                }
-            }
+            printBorrowHistory(borrow_head); // gọi hàm in bảng lịch sử mượn trả sách
         }
         else if(choice == 8){ // yêu cầu 8: xác định độc giả đang mượn nhiều sách nhất
-            int max_r = maxReaderBorrow(reader_head); // max_r (max reader): số lượng sách đang mượn cao nhất
-            if(max_r == 0) printf("-> Hien khong co doc gia nao dang muon sach!\n");
-            else{
-                printf("-> Doc gia dang muon nhieu sach nhat (%d cuon):\n", max_r);
-                // dùng con trỏ p duyệt tìm và in ra tất cả độc giả có số sách đang mượn bằng kỷ lục max_r
-                for(Reader *p = reader_head; p != NULL; p = p->next){
-                    if(p->data.current_borrowed == max_r)
-                        printf("   + [%s] %s - Lop: %s - SDT: %s\n",
-                               p->data.id_reader, p->data.name_reader, p->data.class_name, p->data.phone);
-                }
-            }
+            printTopReaders(reader_head); // gọi hàm tìm và in độc giả đang giữ nhiều sách nhất
         }
         else if(choice == 9){ // yêu cầu 9: tìm sách được mượn nhiều nhất
-            int max_b = maxBookBorrow(book_head); // max_b (max book): số lượt được mượn cao nhất của sách
-            if(max_b == 0) printf("-> Chua co cuon sach nao duoc muon!\n");
-            else{
-                printf("-> Sach duoc muon nhieu nhat (%d luot):\n", max_b);
-                // dùng con trỏ p duyệt tìm và in ra tất cả các cuốn sách có số lượt mượn bằng max_b
-                for(Book *p = book_head; p != NULL; p = p->next){
-                    if(p->data.borrow_count == max_b)
-                        printf("   + [%s] %s - Tac gia: %s\n",
-                               p->data.id_book, p->data.name_book, p->data.author);
-                }
-            }
+            printTopBooks(book_head); // gọi hàm tìm và in cuốn sách có lượt mượn cao nhất
         }
         else if(choice == 10){ // yêu cầu 10: sắp xếp sách theo tên, năm xuất bản, số lượng
             int mode; // mode: tiêu chí sắp xếp do người dùng chọn (1, 2 hoặc 3)
