@@ -1,17 +1,10 @@
-
-
-B01|Nha gia kim                   |Paulo Coelho        |NXB Hoi Nha Van   |1988|5
-B02|Cuon theo chieu gio           |Margaret Mitchell   |NXB Van Hoc       |1936|3
-B03|Doi gio hu                    |Emily Bronte        |NXB Van Hoc       |1847|2
-B04|Chua ruoi                     |William Golding     |NXB Faber & Faber |1954|4
-B05|Tren sa mac va trong rung tham|Henryk Sienkiewicz  |NXB Kim Dong      |1911|0
-B06|Data Structures & Algorithms  |Michael T. Goodrich |Wiley             |2011|6
-B07|Cau truc du lieu va giai thuat|Nguyen Duc Nghia    |NXB DH Bach Khoa  |2003|7
-B08|Doi ngan dung ngu dai         |Robin Sharma        |NXB Tre           |2007|8
-B09|Campbell Biology              |Neil A. Campbell    |Pearson           |2020|4
-B10|Hoa hoc dai cuong             |Vu Dang Do          |NXB Giao Duc      |2018|5
-
-
-
-
-
+B01|Nha gia kim|Paulo Coelho|NXB Hoi Nha Van|1988|5
+B02|Cuon theo chieu gio|Margaret Mitchell|NXB Van Hoc|1936|3
+B03|Doi gio hu|Emily Bronte|NXB Van Hoc|1847|2
+B04|Chua ruoi|William Golding|NXB Faber & Faber|1954|4
+B05|Tren sa mac va trong rung tham|Henryk Sienkiewicz|NXB Kim Dong|1911|0
+B06|Data Structures & Algorithms|Michael T. Goodrich|Wiley|2011|6
+B07|Cau truc du lieu va giai thuat|Nguyen Duc Nghia|NXB DH Bach Khoa|2003|7
+B08|Doi ngan dung ngu dai|Robin Sharma|NXB Tre|2007|8
+B09|Campbell Biology|Neil A. Campbell|Pearson|2020|4
+B10|Hoa hoc dai cuong|Vu Dang Do|NXB Giao Duc|2018|5
